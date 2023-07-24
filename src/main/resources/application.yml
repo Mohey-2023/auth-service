@@ -1,6 +1,6 @@
 spring:
   application:
-    name: groupservice
+    name: authservice
   profiles:
     active: local
   config:
