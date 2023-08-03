@@ -15,6 +15,7 @@ import java.util.UUID;
 @Getter
 public class JoinReqDto {
 
+    private String accessToken;
     //왜 인서트에서 유저네임이 null로가버릴까.....
     //이거 카카오아이디임
     //길이 4~20

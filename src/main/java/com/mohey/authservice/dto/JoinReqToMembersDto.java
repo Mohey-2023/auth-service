@@ -46,6 +46,9 @@ public class JoinReqToMembersDto {
     @NotEmpty
     private String profilePic;
 
+    @NotEmpty
+    private String interests;
+
     // 이메일 형식 message여기에 오류 메세지가 들어가서 출력 됨 email이면 email: 이메일 형식으로 작성해 주세요
     //@NotEmpty
     //@Pattern(regexp = "^[a-zA-Z0-9]{2,10}@[a-zA-Z0-9]{2,6}\\.[a-zA-Z]{2,3}$", message = "이메일 형식으로 작성해주세요")
@@ -56,7 +59,7 @@ public class JoinReqToMembersDto {
     @Pattern(regexp = "^[a-zA-Z가-힣]{1,10}$", message = "한글/영문 1~20자 이내로 작성해주세요")
     private String nickname;
 
-    public JoinReqToMembersDto(String uuId, LocalDateTime birthDate, String password, String gender, String deviceToken, String selfIntroduction, String profilePic, String nickname) {
+    public JoinReqToMembersDto(String uuId, LocalDateTime birthDate, String password, String gender, String deviceToken, String selfIntroduction, String profilePic, String nickname, String interests) {
         this.uuId = uuId;
         this.birthDate = birthDate;
         this.password = password;
@@ -65,5 +68,6 @@ public class JoinReqToMembersDto {
         this.selfIntroduction = selfIntroduction;
         this.profilePic = profilePic;
         this.nickname = nickname;
+        this.interests = interests;
     }
 }

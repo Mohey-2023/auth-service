@@ -14,6 +14,8 @@ import com.mohey.authservice.service.UserService;
 
 import lombok.RequiredArgsConstructor;
 
+import java.rmi.ServerException;
+
 @RequiredArgsConstructor
 //@RequestMapping("/api")
 @RestController
@@ -30,7 +32,16 @@ public class UserController {
         //hasErros로 에러가 있는지 확인 가능
         //여기다가 써도 되지만 AOP로 처리
 
-        JoinRespDto joinRespDto = userService.join(joinReqDto);
+        JoinRespDto joinRespDto;
+        try {
+            joinRespDto = userService.join(joinReqDto);
+            return new ResponseEntity<>(new ResponseDto<>(1, "auth 회원가입 성공", joinRespDto), HttpStatus.CREATED);
+        } catch (ServerException e) {
+            //로그인으로 보내
+
+            return new ResponseEntity<>(new ResponseDto<>(-1, e.getMessage()," "), HttpStatus.CONFLICT);
+            //throw new RuntimeException(e);
+        }
 
         //api호출 멤버서비스에회원가입 하라고 데이터담아서 보내
         // 회원실패시 로직도 만들기
@@ -38,7 +49,7 @@ public class UserController {
 
         //데이터 두개 각각 다른 주소로 어떻게 보내지...
         //feign 클라이언트 가지고 보내야함!!
-        return new ResponseEntity<>(new ResponseDto<>(1, "auth 회원가입 성공", joinRespDto), HttpStatus.CREATED);
+
     }
 
     //회원 탈퇴 메서드 추가
