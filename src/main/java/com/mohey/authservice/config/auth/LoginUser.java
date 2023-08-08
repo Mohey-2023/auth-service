@@ -3,6 +3,7 @@ package com.mohey.authservice.config.auth;
 import java.util.ArrayList;
 import java.util.Collection;
 
+import com.mohey.authservice.dto.DeviceUuidRespDto;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
@@ -29,16 +30,16 @@ public class LoginUser implements UserDetails {
         return authorities;
     }
 
-
     @Override
     public String getPassword() {
         return user.getPassword();
     }
 
     //바꾸면 터지는거
+    //오...
     @Override
     public String getUsername() {
-        return user.getUsername();
+        return user.getKakaoId();
     }
 
     @Override

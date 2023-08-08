@@ -5,6 +5,10 @@ import java.util.UUID;
 
 import javax.persistence.*;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
+import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -41,7 +45,7 @@ public class User { // extends 시간설정
 
     //카카오아이디...
     @Column(unique = true, nullable = false, length = 20)
-    private String username;
+    private String kakaoId;
 
     //Column(nullable = false, length = 30)
     //private String kakaoId;
@@ -50,12 +54,13 @@ public class User { // extends 시간설정
     //cascade?
     @Column(unique = true, nullable = false, length = 100)
     //@JoinColumn(name = "UserWithdrawal_uuId")
-    private String uuId;
+    private String memberUuid;
 
 
 //    @Column(nullable = false, length = 20)
 //    private String fullname;
 
+    //시큐리티가 강제로
     @Column(nullable = false, length = 60) // 패스워드 인코딩(BCrypt) 카카오아이디 로그인이어도 패스워드는 필요함
     private String password;
     // Enum 타입을 문자열로 매핑
@@ -64,21 +69,19 @@ public class User { // extends 시간설정
     @Column(nullable = false)
     private UserEnum role; // ADMIN, CUSTOMER
 
+
+    @JsonSerialize(using = LocalDateTimeSerializer.class)
+    @JsonDeserialize(using = LocalDateTimeDeserializer.class)
     @LastModifiedDate // Insert, Update 시 날짜 자동 들어감
     @Column(nullable = false)
-    private LocalDateTime createdAt;
+    private LocalDateTime createdDatetime;
 
     @Builder
-    public User(Long id, String username, String password, String uuId, UserEnum role, LocalDateTime createdAt) {
-        this.id = id;
-        //그냥 이대로 납둬볼까...
-        this.username = username;
-        this.uuId = uuId;
-        this.role = role;
+    public User(String kakaoId, String memberUuid, String password, UserEnum role, LocalDateTime createdDatetime) {
+        this.kakaoId = kakaoId;
+        this.memberUuid = memberUuid;
         this.password = password;
-        this.createdAt = createdAt;
+        this.role = role;
+        this.createdDatetime = createdDatetime;
     }
-
-
-
 }

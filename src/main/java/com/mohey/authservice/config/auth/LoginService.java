@@ -1,7 +1,7 @@
 package com.mohey.authservice.config.auth;
 
 import com.mohey.authservice.domain.User;
-import com.mohey.authservice.domain.UserRepository;
+import com.mohey.authservice.repository.UserRepository;
 import com.mohey.authservice.service.KaKaoLoginService;
 import com.mohey.authservice.service.RedisService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,9 +9,8 @@ import org.springframework.security.authentication.InternalAuthenticationService
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
-
-
 
 @Service
 public class LoginService implements UserDetailsService {
@@ -33,15 +32,19 @@ public class LoginService implements UserDetailsService {
         String kakaoId = kakaoLoginService.createKakaoUser(accessToken);
         System.out.println("kakaoId: " + kakaoId);
         System.out.println("loginService");
+        BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
+        System.out.printf("password" + passwordEncoder.encode(""));
         //더미데이터들어가있음
-        User userPS = userRepository.findByUsername(kakaoId).orElseThrow(
+        User userPS = userRepository.findByKakaoId(kakaoId).orElseThrow(
                 () -> new InternalAuthenticationServiceException("인증 실패")); // 나중에 테스트할 때 설명해드림.
 //            Authentication 에 있는 거랑 userPs username pass와 자동비교
 
 
-        System.out.println("uuId: " + userPS.getUuId());
-        System.out.println("userPds: " + userPS.getUuId());
+
+
+        //System.out.println("uuId: " + userPS.getMemberUuid());
+        System.out.println("userPds: " + userPS.getMemberUuid());
         System.out.println("userPdspassword: " + userPS.getPassword());
         return new LoginUser(userPS);
     }

@@ -7,6 +7,8 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.mohey.authservice.dto.DeviceUuidDto;
+import com.mohey.authservice.dto.DeviceUuidRespDto;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -23,7 +25,7 @@ import com.mohey.authservice.dto.LoginRespDto;
 import com.mohey.authservice.service.KaKaoLoginService;
 import com.mohey.authservice.util.CustomResponseUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
+import org.springframework.stereotype.Component;
 
 
 //로그인 인증 필터임 securityconfig에서 따로 등록이 필요함
@@ -36,6 +38,7 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
 
     private final CustomResponseUtil customResponseUtil;
     private KaKaoLoginService kakaoLoginService;
+
 
 
 //    @Autowired
@@ -65,9 +68,21 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
             //username과 password가 존재함
 
             System.out.println("eeeeewwwwwwwwwwwww");
+            //이건 한 번만 쓸 수 있음 !! 한 번 꺼낼 때 필요한 정보 저장해두기
             LoginReqDto loginReqDto = om.readValue(request.getInputStream(), LoginReqDto.class);
             String username = loginReqDto.getAccessToken();
-
+            String deviceUuid = loginReqDto.getDeviceUuid();
+            String deviceToken = loginReqDto.getDeviceToken();
+           DeviceUuidDto deviceUuidDto = new DeviceUuidDto(deviceUuid, deviceToken);
+            request.setAttribute("deviceUuidDto", deviceUuidDto);
+            System.out.println(username);
+            System.out.println("DeviceUuid:" + deviceUuid);
+            System.out.println("DeviceToken: "+deviceToken);
+            //dto로 디바이스 uuid 클래스 만들어서
+            //세터 게터 만들고
+            // 여기서 셋 해주고 가져와서 쓰자
+            //DeviceUuidDto deviceUuidDto = new DeviceUuidDto(loginReqDto.g)
+                    
             //로그인시 공백으로라도 넣어줘야함
             String password = "";
 
@@ -111,7 +126,7 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
             //키값 맞춰줘야함 LoginService 참고
             //여기못감 !!
             //카카오...
-            System.out.println("username: "+username);
+            //System.out.println("username: "+username);
             Authentication authentication = authenticationManager.authenticate(authenticationToken);
 
             System.out.println("eaaaaaaaaaaaaaaae232323");
@@ -157,13 +172,22 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
     protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain,
                                             Authentication authResult) throws IOException, ServletException {
         log.debug("디버그 : successfulAuthentication 호출됨");
+//
+//        ObjectMapper om = new ObjectMapper();
+//        LoginReqDto loginReqDto = om.readValue(request.getInputStream(), LoginReqDto.class);
+//        System.out.println("loginReqDto: "+ loginReqDto.getAccessToken());
+
+
+        DeviceUuidDto deviceUuidDto = (DeviceUuidDto) request.getAttribute("deviceUuidDto");
         LoginUser loginUser = (LoginUser) authResult.getPrincipal(); //로그인 유저 정보
         String accessToken = JwtProcess.createAccessToken(loginUser); // 이 로그인 유저로 jwt 액세스 토큰 만들기
-        String refreshToken = JwtProcess.createRefreshToken(loginUser);//리프레시 토큰도 만들어줘야함
+        String refreshToken = JwtProcess.createRefreshToken(loginUser,deviceUuidDto);//리프레시 토큰도 만들어줘야함
         //String memberUuid = loginUser.getUser().getMemberuuid();
         // response.addHeader("UUID", memberUuid);
         response.addHeader(JwtVO.HEADER, accessToken); // 헤더에 토큰 담아
-        response.addHeader("RefreshToken", refreshToken);
+        response.addHeader(JwtVO.REFRESH_HEADER, refreshToken);
+        
+        //deviceUuid 담아서 보내주자
 
         //redisService 의존성주입 못해서. . . 다른곳에서 해야할듯
         //db에 refresh 토큰 저장해야함
@@ -172,7 +196,7 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
 //        redisService.getValues(loginUser.getUsername());
 
         LoginRespDto loginRespDto = new LoginRespDto(loginUser.getUser());
-        customResponseUtil.success(response, loginRespDto);
+        customResponseUtil.success(response, loginRespDto,deviceUuidDto);
     }
 
 

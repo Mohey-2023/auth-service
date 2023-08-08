@@ -2,8 +2,11 @@ package com.mohey.authservice.util;
 
 import javax.servlet.http.HttpServletResponse;
 
+import com.mohey.authservice.dto.DeviceUuidDto;
+import com.mohey.authservice.dto.LoginRespDto;
 import com.mohey.authservice.service.RedisService;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.mohey.authservice.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,33 +15,35 @@ import org.springframework.http.HttpStatus;
 import com.mohey.authservice.dto.ResponseDto;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Component;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import java.util.UUID;
 
 
 @Component
 public class CustomResponseUtil {
     private static final Logger log = LoggerFactory.getLogger(CustomResponseUtil.class);
 
-
     private final RedisService redisService;
+    private final UserService userService;
 
     //의존성주입
     @Autowired
-    public CustomResponseUtil(RedisService redisService) {
+    public CustomResponseUtil(RedisService redisService, UserService userService) {
         this.redisService = redisService;
+        this.userService = userService;
     }
 
     //여기서 토큰 담아보자
-    public void success(HttpServletResponse response, Object dto) {
+    public void success(HttpServletResponse response, Object dto,Object dto2) {
         try {
             ObjectMapper om = new ObjectMapper();
             ResponseDto<?> responseDto = new ResponseDto<>(1, "로그인성공", dto);
             String responseBody = om.writeValueAsString(responseDto);
             response.setContentType("application/json; charset=utf-8");
             response.setStatus(200);
-
-            //uuId를 유저한테 가져와서 줘야하는데....
+            LoginRespDto loginRespDto = (LoginRespDto) dto;
+            DeviceUuidDto deviceUuidDto = (DeviceUuidDto) dto2 ;
+            System.out.println("dasddadadadwdadwa"+deviceUuidDto.toString());
+            System.out.println("sssddadadadwdadwa"+loginRespDto.getMemberUuid());
+                    //uuId를 유저한테 가져와서 줘야하는데....
             //액세스 토큰
             String accessToken = response.getHeader("Authorization");
             //리프레시 토큰
@@ -50,17 +55,23 @@ public class CustomResponseUtil {
 //            System.out.println(responseBody);
             //db에 refresh 토큰 저장해야함
 
+            //deviceuuid 검증
+            //우리 디비에 있으면 ok
+            //없다면 새로 추가 + deviceUuid랑 deviceToken body에 넣어서 넘겨주기
+            userService.verifyDeviceUuid(deviceUuidDto.getDeviceUuid(), deviceUuidDto.getDeviceToken(),loginRespDto.getMemberUuid());
+
             //uuid dto에서 꺼내야함
             String jsonString = responseBody;
             ObjectMapper objectMapper = new ObjectMapper();
             JsonNode jsonNode = objectMapper.readTree(jsonString);
-            String uuId = jsonNode.get("data").get("uuId").asText();
-            System.out.println(uuId);
+            String memberUuid = jsonNode.get("data").get("memberUuid").asText();
+            System.out.println(memberUuid);
+            System.out.println("CustomResponseUtil");
             //System.out.println("responseBody: " + responseBody);
-            //System.out.println(uuid);
-            redisService.setValues(uuId,refreshToken);
+            //System.out.println(memberUuid);
+            redisService.setValues(deviceUuidDto.getDeviceUuid() + ':'+ memberUuid,refreshToken);
             //System.out.println("outOfRedis");
-            redisService.getValues(uuId);
+            redisService.getValues(deviceUuidDto.getDeviceUuid() + ':'+ memberUuid);
 
             response.getWriter().println(responseBody); // 예쁘게 메시지를 포장하는 공통적인 응답 DTO를 만들어보자!!
         } catch (Exception e) {
