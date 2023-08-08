@@ -1,5 +1,7 @@
 package com.mohey.authservice.dto;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -10,6 +12,7 @@ import lombok.Setter;
 public class ResponseDto<T> {
     private final Integer code; // 1 성공, -1 실패
     private final String msg;
+
     private final T data; //data메세지 형태가 다양하니까 제네릭 으로 하자
 
     @Override

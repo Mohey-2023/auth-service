@@ -1,7 +1,5 @@
 package com.mohey.authservice.dto;
 
-import com.mohey.authservice.domain.User;
-import com.mohey.authservice.domain.UserRepository;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -14,7 +12,6 @@ public class DeleteReqDto {
 
     @NotEmpty
     @Size(min = 4, max = 100)
-    private String uuId;
-
-
+    private String memberUuid;
+    
 }

@@ -1,5 +1,6 @@
-package com.mohey.authservice.domain;
+package com.mohey.authservice.repository;
 
+import com.mohey.authservice.domain.UserWithdrawal;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;
