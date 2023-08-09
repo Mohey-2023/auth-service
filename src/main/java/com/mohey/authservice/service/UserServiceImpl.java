@@ -6,6 +6,7 @@ import com.auth0.jwt.interfaces.DecodedJWT;
 import com.mohey.authservice.config.auth.LoginUser;
 import com.mohey.authservice.config.jwt.JwtVO;
 import com.mohey.authservice.domain.UserDeviceInfo;
+import com.mohey.authservice.domain.UserEnum;
 import com.mohey.authservice.domain.UserWithdrawal;
 import com.mohey.authservice.dto.*;
 import com.mohey.authservice.repository.UserDeviceInfoRepository;
@@ -15,6 +16,7 @@ import com.mohey.authservice.service.client.MemberServiceClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.InternalAuthenticationServiceException;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,7 +26,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.web.client.HttpServerErrorException;
 
 import java.rmi.ServerException;
+import java.time.LocalDateTime;
 import java.util.Optional;
+import java.util.UUID;
 
 @RequiredArgsConstructor
 @Service
@@ -50,16 +54,21 @@ public class UserServiceImpl implements UserService {
             throw new ServerException("이미 가입된 사용자입니다.");
 
         }
+        String memberUuid = UUID.randomUUID().toString();
+        String deviceUuid = UUID.randomUUID().toString();
 
-        joinReqDto.setKakaoId(kakaoId);
+        BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+        String password = passwordEncoder.encode("");
+        System.out.println("deviceUuid: "+deviceUuid);
+
         //액세스토큰으로 카카오 아이디 받아와서 객체 만드는 걸로 변경
-        userRepository.save(joinReqDto.toEntity());
+        userRepository.save(new User(kakaoId, memberUuid,password, UserEnum.MEMBER, LocalDateTime.now()));
 
         //여기서 멤버한테 보내야 함. .. .!!
         //dto만들어주고
         //client에 있는 메서드 불러오기
         //System.out.println("joinfeign1");
-        memberServiceClient.join(joinReqDto.toMemberEntity());
+        memberServiceClient.join(new JoinRespToMembersDto(memberUuid,joinReqDto.getBirthDate(),joinReqDto.getGender(),deviceUuid,joinReqDto.getDeviceToken(),joinReqDto.getSelfIntroduction(), joinReqDto.getProfileUrl(), joinReqDto.getInterests(), joinReqDto.getNickname()));
         //System.out.println("joinfeign2");
 
         // 3. dto 응답
@@ -69,7 +78,7 @@ public class UserServiceImpl implements UserService {
 //        }
 
         //System.out.println("멤버 정보 넘겨주기 실패 !");
-        return null;
+        return new JoinRespDto(memberUuid);
     }
 
     //로그아웃, 회원탈퇴
@@ -95,24 +104,24 @@ public class UserServiceImpl implements UserService {
     @Override
     public Boolean verifyRefreshToken(String refreshToken) {
         try{
-        //PREFIX는 인코딩 안된거라 빼줘야됨
-        String realRefresh = refreshToken.substring(JwtVO.TOKEN_PREFIX.length());
-        //System.out.println(realRefresh);
-        DecodedJWT decodedJWT = JWT.require(Algorithm.HMAC512(JwtVO.SECRET)).build().verify(realRefresh);
-        //System.out.println(decodedJWT);
-        String memberUuid = decodedJWT.getClaim("memberUuid").asString(); //토큰 내부는 암호화 안되어 있으니까 최소한의 정보만 넣자
-        String deviceUuid = decodedJWT.getClaim("deviceUuid").asString();
-        //System.out.println(memberUuid);
-        //System.out.println(deviceUuid);
-        //redisService.getValuse(deviceUuid+':'+memberUuid)로 찾아야 나옴... 이걸 어떻게 가져오지
-        //redisService.getValues(memberUuid)
+            //PREFIX는 인코딩 안된거라 빼줘야됨
+            String realRefresh = refreshToken.substring(JwtVO.TOKEN_PREFIX.length());
+            //System.out.println(realRefresh);
+            DecodedJWT decodedJWT = JWT.require(Algorithm.HMAC512(JwtVO.SECRET)).build().verify(realRefresh);
+            //System.out.println(decodedJWT);
+            String memberUuid = decodedJWT.getClaim("memberUuid").asString(); //토큰 내부는 암호화 안되어 있으니까 최소한의 정보만 넣자
+            String deviceUuid = decodedJWT.getClaim("deviceUuid").asString();
+            //System.out.println(memberUuid);
+            //System.out.println(deviceUuid);
+            //redisService.getValuse(deviceUuid+':'+memberUuid)로 찾아야 나옴... 이걸 어떻게 가져오지
+            //redisService.getValues(memberUuid)
             //db에 저장된 거랑 같아 ??
-        if (redisService.getValues(deviceUuid+':'+memberUuid) == null) {
-            return false;
-        } else {
-            return true;
-            //IllegalArgumentException, HttpServerErrorException.InternalServerError
-        }} catch (Exception e){
+            if (redisService.getValues(deviceUuid+':'+memberUuid) == null) {
+                return false;
+            } else {
+                return true;
+                //IllegalArgumentException, HttpServerErrorException.InternalServerError
+            }} catch (Exception e){
             return false;
         }
 
@@ -135,5 +144,5 @@ public class UserServiceImpl implements UserService {
             //System.out.println("feign: "+memberServiceClient.register(deviceUuidRespDto));
 
             //status에 따라 재요청
-    }}
+        }}
 }
