@@ -18,35 +18,17 @@ import java.time.LocalDateTime;
 @Setter
 @Getter
 public class LoginRespDto {
-    private Long id;
-    private String kakaoId;
 
-    @JsonSerialize(using = LocalDateTimeSerializer.class)
-    @JsonDeserialize(using = LocalDateTimeDeserializer.class)
-    private LocalDateTime createdDateTime;
     private String memberUuid;
 
-//    private String deviceUuid;
+    public LoginRespDto(String memberUuid) {
 
-//    private String deviceToken;
-    //private String deviceUuid;
-    //private String deviceToken;
-
-    public LoginRespDto(Long id, String kakaoId, LocalDateTime createdDateTime, String memberUuid) {
-        this.id = id;
-        this.kakaoId = kakaoId;
-        this.createdDateTime = createdDateTime;
         this.memberUuid = memberUuid;
-        //this.deviceUuid = deviceUuid;
-        //this.deviceToken = deviceToken;
+
     }
     @Builder
     public LoginRespDto(User user) {
-        this.id = user.getId();
-        this.kakaoId = user.getKakaoId();
         this.memberUuid = user.getMemberUuid();
-        this.createdDateTime = user.getCreatedDatetime();
 
     }
 }
-
