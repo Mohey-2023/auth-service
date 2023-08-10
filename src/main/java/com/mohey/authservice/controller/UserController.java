@@ -47,7 +47,7 @@ public class UserController {
             //로그인으로 보내
             //어떻게 .... ? 카카오 로그인으로 보내야 하잖아
             // 프론트에서 리다이렉트 0
-            return new ResponseEntity<>(new ResponseDto<>(0, e.getMessage()," "), HttpStatus.CONFLICT);
+            return new ResponseEntity<>(new ResponseDto<>(0, e.getMessage(), " "), HttpStatus.CONFLICT);
             //throw new RuntimeException(e);
         }
 
@@ -62,7 +62,7 @@ public class UserController {
 
     //회원 탈퇴 메서드 추가
     @PostMapping("/{uuId}/good-bye")
-    public ResponseEntity<?> withDraw(@PathVariable String memberUuid, DeleteReqDto deleteReqDto){
+    public ResponseEntity<?> withDraw(@PathVariable String memberUuid, DeleteReqDto deleteReqDto) {
         deleteReqDto.setMemberUuid(memberUuid);
         userService.withDraw(deleteReqDto);
         return new ResponseEntity<>(new ResponseDto<>(1, "회원탈퇴 성공", " "), HttpStatus.NO_CONTENT);
@@ -70,24 +70,25 @@ public class UserController {
 
     //로그아웃
     @PostMapping("/logout")
-    public ResponseEntity<?> logout(@RequestBody String memberUuId){
+    public ResponseEntity<?> logout(@RequestBody String memberUuId) {
         userService.logout(memberUuId);
         //System.out.println(redisService.getValues(uuId));
-        return new ResponseEntity<>(new ResponseDto<>(1,"로그아웃", ""), HttpStatus.OK);
+        return new ResponseEntity<>(new ResponseDto<>(1, "로그아웃", ""), HttpStatus.OK);
 
     }
 
     @PostMapping("/jwt/verifyRefreshToken")
-    public ResponseEntity<?> isVerifiedRefreshToken(@RequestHeader String RefreshToken){
+    public ResponseEntity<?> isVerifiedRefreshToken(@RequestHeader String RefreshToken) {
 
-            //System.out.println("inputrefresh: "+ RefreshToken);
-            Boolean refresh = userService.verifyRefreshToken(RefreshToken);
-            //System.out.println();
+        //System.out.println("inputrefresh: "+ RefreshToken);
+        Boolean refresh = userService.verifyRefreshToken(RefreshToken);
+        //System.out.println();
 
-            if(refresh){
-                return new ResponseEntity<>(new ResponseDto<>(1,"refreshToken 유효", null), HttpStatus.OK);}
-            else{
-                return new ResponseEntity<>(new ResponseDto<>(-1,"refreshToken 유효하지 않거나 올바른 토큰이 아닙니다.", null), HttpStatus.BAD_REQUEST);}
+        if (refresh) {
+            return new ResponseEntity<>(new ResponseDto<>(1, "refreshToken 유효", null), HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>(new ResponseDto<>(-1, "refreshToken 유효하지 않거나 올바른 토큰이 아닙니다.", null), HttpStatus.BAD_REQUEST);
+        }
     }
 
 }
