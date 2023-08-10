@@ -4,7 +4,7 @@ package com.mohey.authservice.config.jwt;
  * 리플래시 토큰 구현 안함
  */
 public interface JwtVO {
-    public static final String SECRET = "모헤이"; // HS256 (대칭키)
+    public static final String SECRET = "모헤이모헤이모헤이모헤이모헤이모헤이모헤이모헤이"; // HS256 (대칭키)
     //jwt토큰을 암호화해서 돌려줘야 함 서버만 알고있으면 되는 키 메타쾽(프론트는 키를 가지고 있을 필요가 없음)
     //노출시키면 안되니 db나 환경변수에서 끌어 옴
     public static final int EXPIRATION_TIME = 1000 * 60 * 60 ; // 1000이 1초
