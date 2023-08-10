@@ -25,13 +25,14 @@ import java.rmi.ServerException;
 @RequiredArgsConstructor
 //@RequestMapping("/api")
 @RestController
+@RequestMapping("/auth")
 public class UserController {
     private final UserService userService;
     private final RedisService redisService;
 
     //회원가입 수정
-    @PostMapping("/members/auth/join")
-    public ResponseEntity<?> join(@RequestBody @Valid JoinReqDto joinReqDto, BindingResult bindingResult) {
+    @PostMapping("/join")
+    public ResponseEntity<?> join(@RequestBody JoinReqDto joinReqDto, BindingResult bindingResult) {
         //javax.validation으로 회원가입시 유효성 검사 한다. @Valid 어노테이션으로 joinReqDto에 valid유효성 테스트를 통과하지 못하면
         //bindingResult에 모든 오류의 내용이 담기게 된다
         //BindingResult는 유효성 검사 결과를 저장하는 객체입니다. BindingResult는 @Valid 어노테이션이 적용된 객체의 유효성 검사 결과를 담고 있습니다
@@ -60,7 +61,7 @@ public class UserController {
     }
 
     //회원 탈퇴 메서드 추가
-    @PostMapping("members/{uuId}/good-bye")
+    @PostMapping("/{uuId}/good-bye")
     public ResponseEntity<?> withDraw(@PathVariable String memberUuid, DeleteReqDto deleteReqDto){
         deleteReqDto.setMemberUuid(memberUuid);
         userService.withDraw(deleteReqDto);
@@ -68,7 +69,7 @@ public class UserController {
     }
 
     //로그아웃
-    @PostMapping("/members/logout")
+    @PostMapping("/logout")
     public ResponseEntity<?> logout(@RequestBody String memberUuId){
         userService.logout(memberUuId);
         //System.out.println(redisService.getValues(uuId));

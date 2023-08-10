@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
 @Component
-@org.springframework.cloud.openfeign.FeignClient(name = "member-service",url = "http://127.0.0.1:8098")
+@org.springframework.cloud.openfeign.FeignClient(name = "member-service",url = "http://${my.config.url}:8000")
 public interface MemberServiceClient {
     //이거 FeignClient에서 jpa 처럼 알아서 구현해준다고 함 !!!
     //내가보내는 거는 postMapping으로 보낼 주소 !!
