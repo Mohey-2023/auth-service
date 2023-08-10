@@ -90,6 +90,7 @@ public class CustomResponseUtil {
             response.setStatus(httpStatus.value());
             response.getWriter().println(responseBody); // 예쁘게 메시지를 포장하는 공통적인 응답 DTO를 만들어보자!!
         } catch (Exception e) {
+            e.printStackTrace();
             System.out.println(e.getMessage());
             log.error("서버 파싱 에러");
         }
