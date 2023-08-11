@@ -1,5 +1,7 @@
 package com.mohey.authservice.service;
 
+import com.amazonaws.services.s3.model.GetObjectRequest;
+import com.amazonaws.services.s3.model.S3Object;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.interfaces.DecodedJWT;
@@ -23,6 +25,8 @@ import org.springframework.transaction.annotation.Transactional;
 import com.mohey.authservice.domain.User;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.web.client.HttpServerErrorException;
 
 import java.rmi.ServerException;
@@ -32,8 +36,11 @@ import java.util.UUID;
 
 @RequiredArgsConstructor
 @Service
+@Slf4j
 public class UserServiceImpl implements UserService {
     private final RedisService redisService;
+    private final ImageService imageService;
+
 
     private final Logger log = LoggerFactory.getLogger(getClass());
     private final UserRepository userRepository;
@@ -42,9 +49,14 @@ public class UserServiceImpl implements UserService {
     private final MemberServiceClient memberServiceClient;
     private final UserDeviceInfoRepository userDeviceInfoRepository;
 
+
     // 서비스는 DTO를 요청받고, DTO로 응답한다.
     @Transactional // 트랜잭션이 메서드 시작할 때, 시작되고, 종료될 때 함께 종료
     public JoinRespDto join(JoinReqDto joinReqDto) throws ServerException {
+        //S3에 이미지 url 가지고 오기
+        String imageUrl = imageService.getImageUrl(joinReqDto.getProfileUrl());
+        log.info(imageUrl);
+
         //db있는지 확인!
         String kakaoId = kakaoLoginService.createKakaoUser(joinReqDto.getAccessToken());
         //System.out.println(userRepository.findByUsername(kakaoId));
@@ -64,11 +76,12 @@ public class UserServiceImpl implements UserService {
         //액세스토큰으로 카카오 아이디 받아와서 객체 만드는 걸로 변경
         userRepository.save(new User(kakaoId, memberUuid,password, UserEnum.MEMBER, LocalDateTime.now()));
 
+
         //여기서 멤버한테 보내야 함. .. .!!
         //dto만들어주고
         //client에 있는 메서드 불러오기
         //System.out.println("joinfeign1");
-        memberServiceClient.join(new JoinRespToMembersDto(memberUuid,joinReqDto.getBirthDate(),joinReqDto.getGender(),deviceUuid,joinReqDto.getDeviceToken(),joinReqDto.getSelfIntroduction(), joinReqDto.getProfileUrl(), joinReqDto.getInterests(), joinReqDto.getNickname()));
+        memberServiceClient.join(new JoinRespToMembersDto(memberUuid,joinReqDto.getBirthDate(),joinReqDto.getGender(),deviceUuid,joinReqDto.getDeviceToken(),joinReqDto.getSelfIntroduction(), imageUrl, joinReqDto.getInterests(), joinReqDto.getNickname()));
         //System.out.println("joinfeign2");
 
         // 3. dto 응답
