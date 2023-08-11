@@ -7,6 +7,7 @@ import com.mohey.authservice.config.auth.LoginUser;
 import com.mohey.authservice.config.jwt.JwtProcess;
 import com.mohey.authservice.config.jwt.JwtVO;
 import com.mohey.authservice.dto.*;
+import com.mohey.authservice.service.ImageService;
 import com.mohey.authservice.service.RedisService;
 import feign.FeignException;
 import feign.Param;
@@ -19,16 +20,22 @@ import com.mohey.authservice.dto.DeleteReqDto;
 import com.mohey.authservice.service.UserService;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 import java.rmi.ServerException;
+import java.util.Map;
 
+@Slf4j
 @RequiredArgsConstructor
 //@RequestMapping("/api")
 @RestController
 @RequestMapping("/auth")
+
 public class UserController {
     private final UserService userService;
     private final RedisService redisService;
+    private final ImageService imageService;
+
 
     //회원가입 수정
     @PostMapping("/join")
@@ -38,7 +45,8 @@ public class UserController {
         //BindingResult는 유효성 검사 결과를 저장하는 객체입니다. BindingResult는 @Valid 어노테이션이 적용된 객체의 유효성 검사 결과를 담고 있습니다
         //hasErros로 에러가 있는지 확인 가능
         //여기다가 써도 되지만 AOP로 처리
-        System.out.println(joinReqDto);
+        // System.out.println(joinReqDto);
+        log.info(joinReqDto.toString());
         JoinRespDto joinRespDto;
         try {
             joinRespDto = userService.join(joinReqDto);
@@ -89,6 +97,25 @@ public class UserController {
         } else {
             return new ResponseEntity<>(new ResponseDto<>(-1, "refreshToken 유효하지 않거나 올바른 토큰이 아닙니다.", null), HttpStatus.BAD_REQUEST);
         }
+    }
+
+
+    @PostMapping("image/request") // s3 url 요청
+    public ResponseEntity<String> requestUrl(@RequestBody Map<String, String> payload) {
+        String fileName = payload.get("fileName");
+        String imageType = payload.get("imageType");
+        log.info(fileName);
+        log.info(imageType);
+
+
+        try {
+            String presignedUrl =imageService.requestUrl(fileName, imageType);
+            return ResponseEntity.ok(presignedUrl);
+        } catch (Exception e) {
+            // log.error(e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error generating pre-signed URL");
+        }
+
     }
 
 }
