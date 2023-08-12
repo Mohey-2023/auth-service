@@ -68,7 +68,7 @@ public class UserController {
 
     }
 
-    //회원 탈퇴 메서드 추가
+    //회원 탈퇴
     @PostMapping("/goodbye")
     public ResponseEntity<?> withDraw(@RequestBody String memberUuid) {
         DeleteReqDto deleteReqDto = new DeleteReqDto(memberUuid);
