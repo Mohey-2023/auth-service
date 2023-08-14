@@ -53,8 +53,12 @@ public class UserServiceImpl implements UserService {
     // 서비스는 DTO를 요청받고, DTO로 응답한다.
     @Transactional // 트랜잭션이 메서드 시작할 때, 시작되고, 종료될 때 함께 종료
     public JoinRespDto join(JoinReqDto joinReqDto) throws ServerException {
+
+        String imageUrl="";
         //S3에 이미지 url 가지고 오기
-        String imageUrl = imageService.getImageUrl(joinReqDto.getProfileUrl());
+        if (!joinReqDto.getProfileUrl().equals("")){
+            imageUrl = imageService.getImageUrl(joinReqDto.getProfileUrl());
+        }
         log.info(imageUrl);
 
         //db있는지 확인!
